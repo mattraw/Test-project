@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)file:///Users/205794/Downloads/yoyo-simulator.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yo-Yo Simulator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#e8d5b7;--dark:#5c4a32;--green:#7ab648;--gd:#5a8a30;--blue:#4a9bd9;--bd:#3578a8;--red:#e05555;--yellow:#f0c040;--yd:#c89e20;--purple:#9b6bb5;--pd:#7a4e94;--orange:#e88a3a;--od:#c06a20}
+body{background:var(--bg);font-family:'Fredoka',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;background-image:radial-gradient(ellipse at 20% 50%,rgba(200,170,120,0.4) 0%,transparent 50%),radial-gradient(ellipse at 80% 30%,rgba(220,190,140,0.3) 0%,transparent 50%)}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:999}
+.title{font-family:'Lilita One',sans-serif;font-size:3rem;color:var(--dark);text-shadow:0 4px 0 rgba(0,0,0,0.1);margin:16px 0 4px;letter-spacing:2px}
+.title span{display:inline-block;animation:bo 2s ease-in-out infinite}
+.title span:nth-child(2){animation-delay:.07s}.title span:nth-child(3){animation-delay:.14s}.title span:nth-child(4){animation-delay:.21s}.title span:nth-child(5){animation-delay:.28s}
+@keyframes bo{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.stats{display:flex;gap:14px;align-items:center;margin:6px 0 10px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,0.5);border-radius:30px;padding:5px 16px;font-weight:600;font-size:.95rem;color:var(--dark);box-shadow:0 3px 8px rgba(0,0,0,0.1),inset 0 2px 4px rgba(255,255,255,0.6);border:2px solid rgba(255,255,255,0.4)}
+.pill.money{background:linear-gradient(135deg,#f7e78a,#f0c040);font-size:1.15rem;padding:7px 22px;border-color:var(--yd)}
+.pill.reb{background:linear-gradient(135deg,#c9a0dc,#9b6bb5);color:white;border-color:var(--pd)}
+.ga{display:flex;flex-direction:column;align-items:center;width:100%;max-width:600px;padding:0 16px}
+.stage{width:100%;height:380px;border-radius:24px;position:relative;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,0.1),0 8px 20px rgba(0,0,0,0.12),inset 0 2px 8px rgba(255,255,255,0.3);border:3px solid rgba(0,0,0,0.08);margin-bottom:12px;cursor:default;transition:background .5s}
+.stage.bg-default{background:linear-gradient(180deg,#b8d8f0 0%,#a0c8e8 45%,#8bb868 45%,#78a850 100%)}
+.stage.bg-city{background:linear-gradient(180deg,#7090b0 0%,#506880 30%,#404850 60%,#555 60%,#444 100%)}
+.stage.bg-night{background:linear-gradient(180deg,#0a0a2e 0%,#1a1a4e 40%,#2a2a3e 60%,#1a2a1a 60%,#0a1a0a 100%)}
+.stage.bg-hogwarts{background:linear-gradient(180deg,#2a1a3a 0%,#3a2a4a 35%,#4a3a2a 55%,#3a4a2a 55%,#2a3a1a 100%)}
+.stage.bg-moon{background:linear-gradient(180deg,#0a0a1a 0%,#1a1a2a 50%,#888 50%,#999 60%,#777 100%)}
+.stage.manual-mode{cursor:pointer}.stage.manual-mode:hover{filter:brightness(1.02)}.stage.manual-mode:active{filter:brightness(0.98)}
+.stage-decor{position:absolute;inset:0;pointer-events:none;z-index:1}
+.cloud{position:absolute;background:rgba(255,255,255,0.6);border-radius:50px}.c1{width:80px;height:28px;top:28px;left:10%;animation:cd 22s linear infinite}.c2{width:55px;height:20px;top:52px;left:55%;animation:cd 28s linear infinite reverse}
+@keyframes cd{from{transform:translateX(-120px)}to{transform:translateX(700px)}}
+.sun{position:absolute;top:18px;right:28px;width:48px;height:48px;background:radial-gradient(circle,#f8e060 30%,#f0c040 60%,transparent 70%);border-radius:50%;box-shadow:0 0 30px rgba(240,192,64,0.4)}
+.star{position:absolute;width:3px;height:3px;background:white;border-radius:50%;opacity:0}
+.bg-night .star,.bg-moon .star{opacity:1;animation:tw 2s ease-in-out infinite alternate}
+@keyframes tw{0%{opacity:.3}100%{opacity:1}}
+.moon-obj{position:absolute;top:20px;right:30px;width:50px;height:50px;background:radial-gradient(circle at 35% 35%,#eee,#ccc);border-radius:50%;display:none;box-shadow:0 0 20px rgba(255,255,255,0.3)}
+.bg-moon .moon-obj,.bg-night .moon-obj{display:block}.bg-moon .sun,.bg-night .sun{display:none}
+.castle{position:absolute;bottom:0;left:0;width:100%;display:none;z-index:0;opacity:.7}.bg-hogwarts .castle{display:block}.bg-hogwarts .sun{display:none}
+.building{position:absolute;bottom:0;display:none}.bg-city .building{display:block}.bg-city .sun{opacity:.5}
+.crater{position:absolute;border-radius:50%;border:2px solid rgba(0,0,0,0.1);background:rgba(0,0,0,0.05);display:none}.bg-moon .crater{display:block}
+.bg-moon .cloud{display:none}.bg-night .cloud{display:none}.bg-hogwarts .cloud{opacity:.3}
+.tname{position:absolute;top:10px;left:14px;font-family:'Lilita One',sans-serif;font-size:1.2rem;color:white;text-shadow:0 2px 4px rgba(0,0,0,0.4);z-index:3}
+.elabel{position:absolute;top:10px;right:14px;font-weight:700;font-size:1.05rem;color:var(--yellow);text-shadow:0 2px 4px rgba(0,0,0,0.4);z-index:3}
+.epop{position:absolute;font-weight:700;color:var(--yellow);text-shadow:0 1px 3px rgba(0,0,0,0.3);pointer-events:none;animation:fu 1s ease-out forwards;z-index:10}
+@keyframes fu{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
+.chararea{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:300px;height:300px;z-index:5}
+.chararea svg{width:100%;height:100%;overflow:visible}
+.particle-layer{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.particle{position:absolute;pointer-events:none;animation:partFade 0.8s ease-out forwards}
+@keyframes partFade{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0.5)}}
+.mode-toggle{position:absolute;bottom:10px;right:10px;z-index:20;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);border-radius:20px;padding:4px 10px 4px 8px;cursor:pointer;border:none;font-family:'Fredoka',sans-serif;font-size:.72rem;font-weight:600;color:white;transition:all .2s}
+.mode-toggle:hover{background:rgba(0,0,0,0.45)}
+.mode-indicator{width:36px;height:18px;border-radius:10px;background:#666;position:relative;transition:background .2s}
+.mode-indicator::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:white;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.mode-toggle.auto .mode-indicator{background:var(--green)}.mode-toggle.auto .mode-indicator::after{left:20px}
+.click-flash{position:absolute;inset:0;background:rgba(255,255,255,0.15);opacity:0;pointer-events:none;z-index:8;border-radius:24px}
+.click-flash.flash{animation:cfl .15s ease-out}
+@keyframes cfl{0%{opacity:1}100%{opacity:0}}
+.manual-bonus{position:absolute;bottom:36px;right:10px;z-index:20;font-size:.68rem;font-weight:600;color:rgba(255,255,255,0.7);text-shadow:0 1px 2px rgba(0,0,0,0.3);display:none}
+.stage.manual-mode .manual-bonus{display:block}
+.dots{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(0,0,0,0.15);transition:all .3s}.dot.a{background:var(--green);box-shadow:0 0 8px rgba(122,182,72,0.4);transform:scale(1.3)}.dot.c{background:var(--yellow)}
+.spd{font-size:.82rem;color:var(--dark);opacity:.6;margin-bottom:8px}
+.prog{width:100%;margin-bottom:12px}.plbl{font-size:.78rem;color:var(--dark);opacity:.65;margin-bottom:3px}
+.pbg{width:100%;height:11px;background:rgba(0,0,0,0.1);border-radius:10px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1)}
+.pfill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:10px;transition:width .3s}
+.upgrades{display:flex;gap:10px;width:100%;margin-bottom:20px}
+.ubtn{flex:1;border:none;border-radius:16px;padding:12px 6px;cursor:pointer;font-family:'Fredoka',sans-serif;font-weight:600;font-size:.82rem;color:white;position:relative;transition:all .15s;text-shadow:0 1px 2px rgba(0,0,0,0.2);display:flex;flex-direction:column;align-items:center;gap:3px}
+.ubtn::before{content:'';position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 -4px 0 rgba(0,0,0,0.15)}
+.ubtn::after{content:'';position:absolute;top:3px;left:10%;right:10%;height:28%;background:linear-gradient(to bottom,rgba(255,255,255,0.25),transparent);border-radius:12px 12px 50% 50%}
+.ubtn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.05)}.ubtn:active:not(:disabled){transform:translateY(2px)}.ubtn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.3)}
+.ubtn.uy{background:linear-gradient(180deg,var(--green),var(--gd))}.ubtn.us{background:linear-gradient(180deg,var(--blue),var(--bd))}.ubtn.ut{background:linear-gradient(180deg,var(--orange),var(--od))}.ubtn.ur{background:linear-gradient(180deg,var(--purple),var(--pd))}.ubtn.bought{background:linear-gradient(180deg,#888,#666)!important;opacity:.6}
+.ubtn span{z-index:1}.ulbl{font-size:.72rem;opacity:.85}.uname{font-size:.9rem}.ucost{font-size:.82rem}.ueff{font-size:.68rem;opacity:.8}
+.stab{position:fixed;left:0;top:50%;transform:translateY(-50%);background:linear-gradient(180deg,var(--orange),var(--od));color:white;border:none;border-radius:0 14px 14px 0;padding:14px 10px 14px 6px;font-family:'Fredoka',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;z-index:50;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:2px;box-shadow:3px 0 12px rgba(0,0,0,0.15);transition:all .2s}.stab:hover{padding-right:16px}
+.spanel{position:fixed;left:-340px;top:0;width:330px;height:100%;background:linear-gradient(135deg,#f5e6d0,var(--bg));z-index:60;transition:left .35s cubic-bezier(.4,0,.2,1);box-shadow:5px 0 30px rgba(0,0,0,0.2);display:flex;flex-direction:column;padding:20px;overflow-y:auto}.spanel.open{left:0}
+.sover{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:55;opacity:0;pointer-events:none;transition:opacity .3s}.sover.open{opacity:1;pointer-events:all}
+.shdr{font-family:'Lilita One',sans-serif;font-size:1.8rem;color:var(--dark);margin-bottom:12px}
+.shop-tabs{display:flex;gap:6px;margin-bottom:16px}
+.shop-tab-btn{flex:1;border:none;border-radius:10px;padding:8px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;background:rgba(0,0,0,0.08);color:var(--dark);transition:all .2s}.shop-tab-btn.active{background:var(--orange);color:white}
+.shop-section{display:none}.shop-section.active{display:block}
+.ssub{font-size:.8rem;color:var(--dark);opacity:.5;margin-bottom:12px}
+.scard{background:rgba(255,255,255,0.5);border-radius:16px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:12px;border:2px solid rgba(255,255,255,0.3);box-shadow:0 3px 10px rgba(0,0,0,0.08);transition:all .2s}.scard:hover{transform:translateY(-1px)}
+.savatar{width:58px;height:58px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset -2px -2px 5px rgba(0,0,0,0.1),0 2px 6px rgba(0,0,0,0.1)}
+.bg-preview{width:58px;height:58px;border-radius:12px;flex-shrink:0;box-shadow:inset -2px -2px 5px rgba(0,0,0,0.1),0 2px 6px rgba(0,0,0,0.1)}
+.sinfo{flex:1}.sname{font-weight:700;font-size:.95rem;color:var(--dark)}.sdesc{font-size:.72rem;color:var(--dark);opacity:.6;margin-top:2px}
+.sbtn{border:none;border-radius:12px;padding:7px 14px;font-family:'Fredoka',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;color:white;background:linear-gradient(180deg,var(--green),var(--gd));box-shadow:0 3px 0 rgba(0,0,0,0.1);transition:all .15s;white-space:nowrap}
+.sbtn:hover:not(:disabled){transform:translateY(-1px)}.sbtn:disabled{opacity:.5;cursor:not-allowed}.sbtn.owned{background:linear-gradient(180deg,var(--blue),var(--bd))}.sbtn.eq{background:linear-gradient(180deg,var(--purple),var(--pd))}
+.scl{position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--dark);opacity:.5}.scl:hover{opacity:1}
+.mover{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}.mover.active{display:flex}
+.modal{background:linear-gradient(135deg,#f5e6d0,var(--bg));border-radius:24px;padding:28px;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:3px solid rgba(255,255,255,0.3);animation:mp .3s ease-out}
+@keyframes mp{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{font-family:'Lilita One',sans-serif;font-size:1.8rem;color:var(--purple);margin-bottom:10px}.modal p{color:var(--dark);margin-bottom:12px;line-height:1.5;font-size:.95rem}
+.mbtns{display:flex;gap:12px;justify-content:center}
+.mbtn{border:none;border-radius:14px;padding:11px 26px;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all .15s;position:relative}
+.mbtn::before{content:'';position:absolute;inset:0;border-radius:14px;box-shadow:inset 0 -3px 0 rgba(0,0,0,0.15)}
+.mbtn.ok{background:linear-gradient(180deg,var(--purple),var(--pd));color:white}.mbtn.no{background:linear-gradient(180deg,#ccc,#aaa);color:var(--dark)}.mbtn:hover{transform:translateY(-2px)}
+@media(max-width:500px){.title{font-size:2.2rem}.stage{height:320px}.upgrades{gap:6px}}
+</style>
+</head>
+<body>
+<h1 class="title"><span>Y</span><span>o</span><span>-</span><span>Y</span><span>o</span>&nbsp;<span>S</span><span>i</span><span>m</span></h1>
+<div class="stats"><div class="pill money" id="dm">$4</div><div class="pill" id="de">$1/trick</div><div class="pill reb" id="dr">Rebirths: 0</div></div>
+<div class="ga">
+  <div class="stage bg-default" id="stage">
+    <div class="stage-decor" id="decor">
+      <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="moon-obj"></div>
+      <div class="star" style="top:8%;left:15%;width:2px;height:2px;animation-delay:0s"></div><div class="star" style="top:5%;left:40%;width:3px;height:3px;animation-delay:.4s"></div><div class="star" style="top:15%;left:65%;width:2px;height:2px;animation-delay:.8s"></div><div class="star" style="top:3%;left:80%;width:2px;height:2px;animation-delay:1.2s"></div><div class="star" style="top:20%;left:25%;width:3px;height:3px;animation-delay:.2s"></div><div class="star" style="top:12%;left:50%;width:2px;height:2px;animation-delay:.6s"></div><div class="star" style="top:8%;left:92%;width:2px;height:2px;animation-delay:1s"></div><div class="star" style="top:25%;left:75%;width:3px;height:3px;animation-delay:1.4s"></div><div class="star" style="top:18%;left:8%;width:2px;height:2px;animation-delay:.3s"></div><div class="star" style="top:2%;left:55%;width:2px;height:2px;animation-delay:.9s"></div>
+      <div class="building" style="left:5%;bottom:0;width:40px;height:120px;background:linear-gradient(180deg,#555,#444);border-radius:4px 4px 0 0"></div><div class="building" style="left:15%;bottom:0;width:30px;height:90px;background:linear-gradient(180deg,#666,#555);border-radius:3px 3px 0 0"></div><div class="building" style="left:75%;bottom:0;width:45px;height:140px;background:linear-gradient(180deg,#555,#444);border-radius:4px 4px 0 0"></div><div class="building" style="left:88%;bottom:0;width:35px;height:100px;background:linear-gradient(180deg,#666,#555);border-radius:3px 3px 0 0"></div>
+      <svg class="castle" viewBox="0 0 600 300" preserveAspectRatio="xMidYMax meet">
+        <!-- Main castle body -->
+        <rect x="120" y="120" width="360" height="180" rx="5" fill="#3a2a4a"></rect>
+        <!-- Central tower (tallest) -->
+        <rect x="265" y="30" width="70" height="270" rx="4" fill="#4a3a5a"></rect>
+        <polygon points="300,0 260,35 340,35" fill="#5a4a6a"></polygon>
+        <rect x="290" y="5" width="20" height="12" rx="2" fill="#5a4a6a"></rect>
+        <!-- Left tall tower -->
+        <rect x="140" y="60" width="45" height="240" rx="3" fill="#4a3a5a"></rect>
+        <polygon points="162,30 135,65 190,65" fill="#5a4a6a"></polygon>
+        <circle cx="162" cy="22" r="6" fill="#5a4a6a"></circle>
+        <!-- Right tall tower -->
+        <rect x="415" y="50" width="45" height="250" rx="3" fill="#4a3a5a"></rect>
+        <polygon points="437,20 410,55 465,55" fill="#5a4a6a"></polygon>
+        <circle cx="437" cy="12" r="6" fill="#5a4a6a"></circle>
+        <!-- Far left turret -->
+        <rect x="60" y="100" width="35" height="200" rx="3" fill="#3a2a4a"></rect>
+        <polygon points="77,75 55,105 100,105" fill="#4a3a5a"></polygon>
+        <!-- Far right turret -->
+        <rect x="505" y="90" width="35" height="210" rx="3" fill="#3a2a4a"></rect>
+        <polygon points="522,65 500,95 545,95" fill="#4a3a5a"></polygon>
+        <!-- Small spires -->
+        <rect x="200" y="85" width="25" height="215" rx="2" fill="#3a2a4a"></rect>
+        <polygon points="212,65 195,90 230,90" fill="#4a3a5a"></polygon>
+        <rect x="375" y="75" width="25" height="225" rx="2" fill="#3a2a4a"></rect>
+        <polygon points="387,55 370,80 405,80" fill="#4a3a5a"></polygon>
+        <!-- Bridge/walkway -->
+        <rect x="185" y="150" width="80" height="15" rx="3" fill="#3a2a3a"></rect>
+        <rect x="335" y="140" width="80" height="15" rx="3" fill="#3a2a3a"></rect>
+        <!-- Windows (glowing yellow) -->
+        <rect x="155" y="120" width="10" height="14" rx="2" fill="#f0c040" opacity=".5"></rect>
+        <rect x="155" y="160" width="10" height="14" rx="2" fill="#f0c040" opacity=".4"></rect>
+        <rect x="155" y="200" width="10" height="14" rx="2" fill="#f0c040" opacity=".6"></rect>
+        <rect x="280" y="80" width="12" height="16" rx="3" fill="#f0c040" opacity=".5"></rect>
+        <rect x="300" y="80" width="12" height="16" rx="3" fill="#f0c040" opacity=".4"></rect>
+        <rect x="280" y="120" width="12" height="16" rx="3" fill="#f0c040" opacity=".6"></rect>
+        <rect x="300" y="120" width="12" height="16" rx="3" fill="#f0c040" opacity=".5"></rect>
+        <rect x="280" y="160" width="12" height="16" rx="3" fill="#f0c040" opacity=".4"></rect>
+        <rect x="300" y="160" width="12" height="16" rx="3" fill="#f0c040" opacity=".6"></rect>
+        <rect x="430" y="110" width="10" height="14" rx="2" fill="#f0c040" opacity=".5"></rect>
+        <rect x="430" y="150" width="10" height="14" rx="2" fill="#f0c040" opacity=".6"></rect>
+        <rect x="430" y="190" width="10" height="14" rx="2" fill="#f0c040" opacity=".4"></rect>
+        <rect x="215" y="150" width="8" height="12" rx="2" fill="#f0c040" opacity=".3"></rect>
+        <rect x="380" y="140" width="8" height="12" rx="2" fill="#f0c040" opacity=".3"></rect>
+        <rect x="70" y="160" width="8" height="12" rx="2" fill="#f0c040" opacity=".4"></rect>
+        <rect x="70" y="200" width="8" height="12" rx="2" fill="#f0c040" opacity=".3"></rect>
+        <rect x="515" y="150" width="8" height="12" rx="2" fill="#f0c040" opacity=".4"></rect>
+        <rect x="515" y="190" width="8" height="12" rx="2" fill="#f0c040" opacity=".3"></rect>
+        <!-- Main entrance arch -->
+        <rect x="275" y="230" width="50" height="70" rx="25" fill="#2a1a3a"></rect>
+        <rect x="280" y="240" width="40" height="60" rx="20" fill="#1a0a2a"></rect>
+        <!-- Battlements on main wall -->
+        <rect x="120" y="115" width="15" height="10" fill="#4a3a5a"></rect>
+        <rect x="145" y="115" width="15" height="10" fill="#4a3a5a" opacity=".8"></rect>
+        <rect x="335" y="115" width="15" height="10" fill="#4a3a5a"></rect>
+        <rect x="360" y="115" width="15" height="10" fill="#4a3a5a" opacity=".8"></rect>
+        <rect x="455" y="115" width="15" height="10" fill="#4a3a5a"></rect>
+      </svg>
+      <div class="crater" style="bottom:15%;left:20%;width:30px;height:15px"></div><div class="crater" style="bottom:8%;left:55%;width:45px;height:20px"></div><div class="crater" style="bottom:20%;right:15%;width:25px;height:12px"></div>
+    </div>
+    <div class="tname" id="tn">Gravity Pull</div><div class="elabel" id="el">+$1</div>
+    <div class="chararea" id="ca"><svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialgradient id="cs" cx="35%" cy="35%"><stop offset="0%" stop-color="rgba(255,255,255,0.3)"></stop><stop offset="100%" stop-color="rgba(0,0,0,0.1)"></stop></radialgradient>
+    <radialgradient id="sg" cx="40%" cy="35%"><stop offset="0%" stop-color="#e8a070"></stop><stop offset="100%" stop-color="#ca8252"></stop></radialgradient>
+    <radialgradient id="metalG" cx="30%" cy="25%"><stop offset="0%" stop-color="rgba(200,255,200,0.6)"></stop><stop offset="50%" stop-color="rgba(100,200,100,0.2)"></stop><stop offset="100%" stop-color="rgba(0,0,0,0.15)"></stop></radialgradient>
+    <radialgradient id="glowR" cx="35%" cy="30%"><stop offset="0%" stop-color="rgba(255,200,200,0.5)"></stop><stop offset="60%" stop-color="rgba(255,100,100,0.1)"></stop><stop offset="100%" stop-color="rgba(0,0,0,0.1)"></stop></radialgradient>
+    <radialgradient id="metalY" cx="30%" cy="25%"><stop offset="0%" stop-color="rgba(255,255,200,0.6)"></stop><stop offset="50%" stop-color="rgba(230,200,100,0.2)"></stop><stop offset="100%" stop-color="rgba(0,0,0,0.15)"></stop></radialgradient>
+    <radialgradient id="shinyB" cx="30%" cy="25%"><stop offset="0%" stop-color="rgba(200,230,255,0.6)"></stop><stop offset="50%" stop-color="rgba(80,160,230,0.2)"></stop><stop offset="100%" stop-color="rgba(0,0,0,0.1)"></stop></radialgradient>
+  </defs>
+  <rect x="136" y="172" width="15" height="46" rx="7" fill="#5c5040"></rect><rect x="136" y="172" width="15" height="46" rx="7" fill="url(#cs)"></rect>
+  <rect x="149" y="172" width="15" height="46" rx="7" fill="#5c5040"></rect><rect x="149" y="172" width="15" height="46" rx="7" fill="url(#cs)"></rect>
+  <ellipse cx="143" cy="220" rx="11" ry="6" fill="#3a2a1a"></ellipse><ellipse cx="157" cy="220" rx="11" ry="6" fill="#3a2a1a"></ellipse>
+  <rect x="131" y="108" width="38" height="68" rx="16" fill="#4a9bd9"></rect><rect x="131" y="108" width="38" height="68" rx="16" fill="url(#cs)"></rect>
+  
+      <g id="la"><rect x="113" y="113" width="15" height="30" rx="7" fill="#4a9bd9" transform="rotate(8,120,113)"></rect><rect x="111" y="140" width="13" height="28" rx="6" fill="url(#sg)" transform="rotate(5,117,140)"></rect><ellipse cx="116" cy="169" rx="7" ry="8" fill="#e8a070"></ellipse></g>
+      <g id="ra"><rect x="172" y="113" width="15" height="30" rx="7" fill="#4a9bd9" transform="rotate(-8,180,113)"></rect><rect x="176" y="140" width="13" height="28" rx="6" fill="url(#sg)" transform="rotate(-5,182,140)"></rect><ellipse cx="183" cy="169" rx="7" ry="8" fill="#e8a070"></ellipse></g>
+  <!-- Triangle string for Rock the Baby -->
+  
+  <line id="ys" x1="183" y1="172" x2="183" y2="199.42933333333337" stroke="#e05555" stroke-width="1.8" stroke-linecap="round"></line>
+  <g id="ya" transform="translate(183,199.42933333333337)"><circle r="14" fill="#e05555"></circle><circle r="14" fill="url(#cs)"></circle><circle cx="-3" cy="-3" r="4" fill="rgba(255,255,255,0.3)"></circle><circle r="4" fill="rgba(0,0,0,0.15)"></circle></g>
+  <rect x="144" y="98" width="12" height="14" rx="5" fill="url(#sg)"></rect>
+  <ellipse cx="150" cy="66" rx="20" ry="12" fill="#6b4a30"></ellipse><circle cx="150" cy="80" r="23" fill="url(#sg)"></circle><circle cx="150" cy="80" r="23" fill="url(#cs)"></circle>
+  <ellipse cx="142" cy="78" rx="3.2" ry="3.5" fill="#2a1a0a"></ellipse><ellipse cx="158" cy="78" rx="3.2" ry="3.5" fill="#2a1a0a"></ellipse>
+  <circle cx="141" cy="77" r="1.2" fill="white" opacity="0.6"></circle><circle cx="157" cy="77" r="1.2" fill="white" opacity="0.6"></circle>
+  <path d="M144,90Q150,96 156,90" fill="none" stroke="#7a4030" stroke-width="2" stroke-linecap="round"></path>
+  <ellipse cx="135" cy="86" rx="5" ry="3" fill="#e8907a" opacity="0.3"></ellipse><ellipse cx="165" cy="86" rx="5" ry="3" fill="#e8907a" opacity="0.3"></ellipse>
+  </svg></div>
+    <div class="particle-layer" id="particles"></div>
+    <div class="click-flash" id="cf"></div>
+    <div class="manual-bonus">Click to yo-yo! (1.5× bonus)</div>
+    <button class="mode-toggle auto" id="mt" onclick="toggleMode()"><div class="mode-indicator"></div><span class="mode-label" id="ml">Auto</span></button>
+  </div>
+  <div class="dots" id="dots"><div class="dot a"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="spd" id="spd">Trick speed: 1.5s</div>
+  <div class="prog"><div class="plbl" id="plbl">Next: Upg. String — $10</div><div class="pbg"><div class="pfill" id="pfill" style="width: 40%;"></div></div></div>
+  <div class="upgrades">
+    <button class="ubtn uy" id="by" onclick="buy(&#39;yoyo&#39;)" disabled=""><span class="ulbl">🟢 Yo-Yo</span><span class="uname">Upgrade</span><span class="ucost" id="cy">$50</span><span class="ueff">2× earnings</span></button>
+    <button class="ubtn us" id="bs" onclick="buy(&#39;string&#39;)" disabled=""><span class="ulbl">🔵 String</span><span class="uname">Upgrade</span><span class="ucost" id="cs">$10</span><span class="ueff">1.5× earnings</span></button>
+    <button class="ubtn ut" id="bt" onclick="buy(&#39;trick&#39;)" disabled=""><span class="ulbl">🟠 Trick</span><span class="uname">Next Level</span><span class="ucost" id="ct">$100</span><span class="ueff">Power Throw</span></button>
+  </div>
+</div>
+<button class="stab" onclick="tShop()">🛒 SHOP</button>
+<div class="sover" id="sov" onclick="tShop()"></div>
+<div class="spanel" id="sp"><button class="scl" onclick="tShop()">✕</button><div class="shdr">Shop</div>
+  <div class="shop-tabs"><button class="shop-tab-btn active" id="stb-char" onclick="shopTab(&#39;char&#39;)">👤 Characters</button><button class="shop-tab-btn" id="stb-bg" onclick="shopTab(&#39;bg&#39;)">🌄 Backgrounds</button></div>
+  <div class="shop-section active" id="ss-char"><div class="ssub">Buy and equip characters</div><div id="sc"></div></div>
+  <div class="shop-section" id="ss-bg"><div class="ssub">Change your scenery</div><div id="sb"></div></div>
+</div>
+<div class="mover" id="rm"><div class="modal"><h2>✨ Rebirth? ✨</h2><p id="rt">Start over.</p><p><strong>Earnings: 2× multiplied!</strong><br>Costs: 3× more expensive.</p><div class="mbtns"><button class="mbtn no" onclick="closeR()">Not Yet</button><button class="mbtn ok" onclick="doR()">Rebirth!</button></div></div></div>
+<script>
+const T=[
+  {n:"Gravity Pull",e:1,y:50,s:10,t:100,d:1.5},
+  {n:"Power Throw",e:5,y:100,s:20,t:200,d:1.8},
+  {n:"Sleeper",e:15,y:200,s:40,t:400,d:2.0},
+  {n:"Walk the Dog",e:25,y:400,s:80,t:800,d:2.2},
+  {n:"Forward Pass",e:50,y:500,s:100,t:1000,d:1.8},
+  {n:"Rock the Baby",e:100,y:750,s:150,t:1250,d:2.2},
+  {n:"Planet Hop",e:250,y:1000,s:300,t:1500,d:2.2},
+  {n:"Inside Pull",e:500,y:1250,s:750,t:1750,d:2.0},
+  {n:"Breakaway",e:750,y:1500,s:1000,t:2000,d:2.0},
+  {n:"Around the World",e:1000,y:1750,s:1250,t:25000,d:2.5},
+  {n:"Trapeze",e:5000,y:2000,s:1500,t:50000,d:2.5},
+  {n:"DNA",e:10000,y:100000,s:50000,t:1000000,d:2.0},
+  {n:"Godspeed",e:1000000,y:10000000,s:5000000,t:1000000000,d:1.5},
+];
+
+// Yo-yo SVG per trick level
+const STRING_COLORS=['#e05555','#2a8a2a','#dd2020','#c8956a','#d4a820','#2080d0','#c4956a','#e840a0','#7030a0','#2060a0','#f07020','#30c030','#888888'];
+function getStringColor(){return STRING_COLORS[S.lv]||'#ccc'}
+function yoyoSVG(lvl, charYC){
+  const overrideChar = charYC && charYC !== '#e05555';
+  switch(lvl){
+    case 0: // Gravity Pull - default red (or character color)
+      return `<circle r="14" fill="${overrideChar?charYC:'#e05555'}"/><circle r="14" fill="url(#cs)"/><circle cx="-3" cy="-3" r="4" fill="rgba(255,255,255,0.3)"/><circle r="4" fill="rgba(0,0,0,0.15)"/>`;
+    case 1: // Power Throw - metallic green
+      return `<circle r="14" fill="#2a8a2a"/><circle r="14" fill="url(#metalG)"/><circle cx="-4" cy="-5" r="5" fill="rgba(255,255,255,0.35)"/><circle r="3" fill="#1a6a1a"/>`;
+    case 2: // Sleeper - shiny glowing red
+      return `<circle r="16" fill="rgba(255,60,60,0.2)"/><circle r="14" fill="#dd2020"/><circle r="14" fill="url(#glowR)"/><circle cx="-4" cy="-4" r="5" fill="rgba(255,255,255,0.4)"/><circle r="3" fill="#aa1010"/>`;
+    case 3: // Walk the Dog - dog face
+      return `<circle r="14" fill="#c8956a"/><circle r="14" fill="url(#cs)"/><ellipse cx="-8" cy="-10" rx="6" ry="8" fill="#a07048" transform="rotate(-15)"/><ellipse cx="8" cy="-10" rx="6" ry="8" fill="#a07048" transform="rotate(15)"/><circle cx="-5" cy="-2" r="2.5" fill="#2a1a0a"/><circle cx="5" cy="-2" r="2.5" fill="#2a1a0a"/><circle cx="-4.5" cy="-2.5" r=".8" fill="white" opacity=".6"/><circle cx="4.5" cy="-2.5" r=".8" fill="white" opacity=".6"/><ellipse cy="4" rx="5" ry="3.5" fill="#3a2a1a"/><ellipse cy="3" rx="3" ry="2" fill="#e8a0a0"/><path d="M-3,7 Q0,10 3,7" fill="none" stroke="#c87060" stroke-width="1"/>`;
+    case 4: // Forward Pass - metallic yellow
+      return `<circle r="14" fill="#d4a820"/><circle r="14" fill="url(#metalY)"/><circle cx="-4" cy="-5" r="5" fill="rgba(255,255,255,0.4)"/><circle r="3" fill="#b08818"/>`;
+    case 5: // Rock the Baby - shiny blue
+      return `<circle r="14" fill="#2080d0"/><circle r="14" fill="url(#shinyB)"/><circle cx="-4" cy="-5" r="5" fill="rgba(255,255,255,0.45)"/><circle r="3" fill="#1060a0"/>`;
+    case 6: // Planet Hop - Jupiter
+      return `<circle r="14" fill="#c4956a"/><ellipse cx="0" cy="-6" rx="14" ry="3" fill="#d8a878" opacity=".6"/><ellipse cx="0" cy="0" rx="14" ry="2.5" fill="#b87850" opacity=".5"/><ellipse cx="0" cy="5" rx="14" ry="3" fill="#d8a878" opacity=".4"/><ellipse cx="0" cy="9" rx="14" ry="2" fill="#c08060" opacity=".5"/><ellipse cx="5" cy="-2" rx="5" ry="4" fill="#c87848" opacity=".5"/><circle r="14" fill="url(#cs)" opacity=".5"/><circle cx="-4" cy="-5" r="3" fill="rgba(255,255,255,0.2)"/>`;
+    case 7: // Inside Pull - bright pink
+      return `<circle r="14" fill="#e840a0"/><circle r="14" fill="url(#cs)"/><circle cx="-4" cy="-5" r="5" fill="rgba(255,255,255,0.4)"/><circle r="3" fill="#c02080"/>`;
+    case 8: // Breakaway - purple with lightning
+      return `<circle r="14" fill="#7030a0"/><circle r="14" fill="url(#cs)"/><circle cx="-3" cy="-4" r="4" fill="rgba(255,255,255,0.3)"/><circle r="3" fill="#5020780"/>`;
+    case 9: // Around the World - Earth with red glow
+      return `<circle r="16" fill="rgba(255,50,50,0.15)"/><circle r="14" fill="#2060a0"/><circle r="14" fill="url(#cs)" opacity=".3"/><ellipse cx="-4" cy="-3" rx="6" ry="5" fill="#3a8a3a" opacity=".7"/><ellipse cx="5" cy="3" rx="5" ry="6" fill="#3a8a3a" opacity=".6"/><ellipse cx="-2" cy="8" rx="4" ry="3" fill="#3a8a3a" opacity=".5"/><circle cx="-5" cy="-5" r="3" fill="rgba(255,255,255,0.2)"/>`;
+    case 10: // Trapeze - bright orange
+      return `<circle r="14" fill="#f07020"/><circle r="14" fill="url(#cs)"/><circle cx="-4" cy="-5" r="5" fill="rgba(255,255,255,0.4)"/><circle r="3" fill="#d06010"/>`;
+    case 11: // DNA - bright green
+      return `<circle r="14" fill="#30c030"/><circle r="14" fill="url(#cs)"/><circle cx="-4" cy="-5" r="5" fill="rgba(255,255,255,0.4)"/><circle r="3" fill="#20a020"/>`;
+    case 12: // Godspeed - black/white yin-yang
+      return `<circle r="14" fill="white"/><path d="M0,-14 A14,14 0 0,1 0,14 A7,7 0 0,0 0,0 A7,7 0 0,1 0,-14Z" fill="#1a1a1a"/><circle cx="0" cy="-7" r="2.5" fill="white"/><circle cx="0" cy="7" r="2.5" fill="#1a1a1a"/><circle r="14" fill="url(#cs)" opacity=".3"/>`;
+    default: return `<circle r="14" fill="#e05555"/><circle r="14" fill="url(#cs)"/>`;
+  }
+}
+
+// Particles config per level (for breakaway+)
+const PARTICLES={
+  8:{type:'lightning',color:'#c0a0ff',emoji:'⚡'},
+  9:{type:'glow',color:'#ff4040'},
+  10:{type:'emoji',emoji:'🍟'},
+  11:{type:'emoji',emoji:'💚'},
+  12:{type:'yinyang',emoji:'☯️'},
+};
+
+let particleTimer=null;
+function startParticles(){
+  if(particleTimer)clearInterval(particleTimer);
+  const cfg=PARTICLES[S.lv];
+  if(!cfg)return;
+  particleTimer=setInterval(()=>{
+    const ye=document.getElementById('ya');
+    if(!ye)return;
+    const tr=ye.getAttribute('transform');
+    const m=tr.match(/translate\(([^,]+),([^)]+)\)/);
+    if(!m)return;
+    const px=parseFloat(m[1]),py=parseFloat(m[2]);
+    // Convert SVG coords to stage pixel coords (stage is 600 wide approx, svg viewbox 300)
+    const stage=document.getElementById('stage');
+    const sw=stage.offsetWidth,sh=stage.offsetHeight;
+    const ca=document.getElementById('ca');
+    const cw=ca.offsetWidth,ch2=ca.offsetHeight;
+    const ox=ca.offsetLeft,oy=ca.offsetTop;
+    const sx=ox+(px/300)*cw;
+    const sy=oy+(py/300)*ch2;
+    spawnParticle(sx,sy,cfg);
+  },200);
+}
+function stopParticles(){if(particleTimer){clearInterval(particleTimer);particleTimer=null}}
+function spawnParticle(x,y,cfg){
+  const layer=document.getElementById('particles');
+  const p=document.createElement('div');
+  p.className='particle';
+  const dx=(Math.random()-.5)*60;
+  const dy=(Math.random()-.5)*60-20;
+  p.style.cssText=`left:${x}px;top:${y}px;--dx:${dx}px;--dy:${dy}px;font-size:${12+Math.random()*8}px;`;
+  if(cfg.type==='lightning'){
+    p.textContent='⚡';
+  } else if(cfg.type==='glow'){
+    p.style.width='8px';p.style.height='8px';p.style.borderRadius='50%';
+    p.style.background='radial-gradient(circle,rgba(255,60,60,0.8),transparent)';
+    p.style.boxShadow='0 0 6px rgba(255,60,60,0.6)';
+  } else if(cfg.type==='emoji'){
+    p.textContent=cfg.emoji;
+  } else if(cfg.type==='yinyang'){
+    p.textContent='☯️';
+  }
+  layer.appendChild(p);
+  setTimeout(()=>p.remove(),800);
+}
+
+const CH=[
+  {id:'default',nm:'Default',ds:'Regular person',co:0,sk:'#e8a070',sh:'#4a9bd9',pa:'#5c5040',hr:'#6b4a30',hat:0,ex:0,yc:'#e05555'},
+  {id:'harry',nm:'Harry Potter',ds:'Wizard with glasses & robe',co:300,sk:'#e8a070',sh:'#722F37',pa:'#2a2a2a',hr:'#2a1a0a',hat:'wiz',ex:'gls',yc:'#DAA520'},
+  {id:'lumber',nm:'Lumberjack',ds:'Plaid shirt, beard & beanie',co:500,sk:'#d8956a',sh:'#cc3333',pa:'#4a6741',hr:'#8B4513',hat:'bean',ex:'brd',yc:'#228B22'},
+  {id:'cowboy',nm:'Cowboy',ds:'Hat, boots & vest',co:750,sk:'#d8956a',sh:'#c4956a',pa:'#5c4a32',hr:'#6b4a30',hat:'cow',ex:0,yc:'#8B4513'},
+  {id:'ronaldo',nm:'Ronaldo',ds:'Soccer star with ball yo-yo',co:5000,sk:'#c48a5a',sh:'#006600',pa:'#1a1a1a',hr:'#1a0a00',hat:0,ex:'ron',yc:'soc'},
+];
+const BGS=[
+  {id:'default',nm:'Park',ds:'Default sunny park',co:0,cls:'bg-default'},
+  {id:'city',nm:'In a City',ds:'Urban skyline backdrop',co:100000,cls:'bg-city'},
+  {id:'night',nm:'Night Sky',ds:'Stars twinkling above',co:250000,cls:'bg-night'},
+  {id:'hogwarts',nm:'Hogwarts',ds:'Magical castle grounds',co:500000,cls:'bg-hogwarts'},
+  {id:'moon',nm:'On the Moon',ds:'Low gravity yo-yo!',co:1000000,cls:'bg-moon'},
+];
+let S={money:0,lv:0,rb:0,yu:false,su:false,em:1,cm:1,eq:'default',own:['default'],ebg:'default',ownbg:['default'],mode:'auto'};
+function fm(n){if(n>=1e12)return'$'+(n/1e12).toFixed(1)+'T';if(n>=1e9)return'$'+(n/1e9).toFixed(1)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(1)+'K';return'$'+n}
+function gc(t){const tr=T[S.lv];return Math.floor((t==='yoyo'?tr.y:t==='string'?tr.s:tr.t)*S.cm)}
+function ge(){let b=T[S.lv].e;if(S.yu)b*=2;if(S.su)b*=1.5;return Math.floor(b*S.em)}
+function gch(){return CH.find(c=>c.id===S.eq)}
+function adj(h,a){let r=parseInt(h.slice(1,3),16)+a,g=parseInt(h.slice(3,5),16)+a,b=parseInt(h.slice(5,7),16)+a;return'#'+Math.max(0,Math.min(255,r)).toString(16).padStart(2,'0')+Math.max(0,Math.min(255,g)).toString(16).padStart(2,'0')+Math.max(0,Math.min(255,b)).toString(16).padStart(2,'0')}
+
+function toggleMode(){
+  S.mode=S.mode==='auto'?'manual':'auto';
+  document.getElementById('mt').classList.toggle('auto',S.mode==='auto');
+  document.getElementById('ml').textContent=S.mode==='auto'?'Auto':'Manual';
+  document.getElementById('stage').classList.toggle('manual-mode',S.mode==='manual');
+  if(S.mode==='auto')sLoop();else{if(et)clearInterval(et);et=null}ui();
+}
+document.getElementById('stage').addEventListener('click',function(e){
+  if(S.mode!=='manual')return;if(e.target.closest('.mode-toggle'))return;
+  const earnings=Math.floor(ge()*1.5);S.money+=earnings;pop(earnings);
+  const cf=document.getElementById('cf');cf.classList.remove('flash');void cf.offsetWidth;cf.classList.add('flash');ui();
+});
+
+function renderChar(){
+  const a=document.getElementById('ca'),c=gch();
+  const isRonaldo=c.yc==='soc';
+  const isRTB=T[S.lv].n==='Rock the Baby';
+  const isBRK=T[S.lv].n==='Breakaway';
+
+  // Choose yoyo: Ronaldo always soccer ball, others use level-based
+  let yoyo;
+  if(isRonaldo){
+    yoyo=`<circle r="14" fill="white" stroke="#333" stroke-width="1.5"/><path d="M-5,-12L-2,-5L-9,-2" fill="none" stroke="#333" stroke-width="1.2"/><path d="M5,-12L2,-5L9,-2" fill="none" stroke="#333" stroke-width="1.2"/><path d="M-12,5L-5,3L-3,10" fill="none" stroke="#333" stroke-width="1.2"/><path d="M12,5L5,3L3,10" fill="none" stroke="#333" stroke-width="1.2"/><circle r="5" fill="#333" opacity="0.12"/>`;
+  } else {
+    yoyo=yoyoSVG(S.lv, c.yc);
+  }
+
+  let hat='';
+  if(c.hat==='wiz')hat=`<g transform="translate(150,48)"><polygon points="-20,10 0,-30 20,10" fill="#333"/><rect x="-26" y="8" width="52" height="7" rx="3" fill="#333"/><rect x="-5" y="-5" width="10" height="4" rx="2" fill="#DAA520"/></g>`;
+  if(c.hat==='bean')hat=`<g transform="translate(150,56)"><ellipse cy="4" rx="23" ry="11" fill="#cc3333"/><ellipse cy="-3" rx="19" ry="13" fill="#cc3333"/><ellipse cy="9" rx="25" ry="5" fill="#eee"/><circle cy="-15" r="5" fill="#eee"/></g>`;
+  if(c.hat==='cow')hat=`<g transform="translate(150,52)"><ellipse cy="10" rx="34" ry="6" fill="#8B6914"/><rect x="-16" y="-8" width="32" height="18" rx="11" fill="#A0782C"/><ellipse cy="-8" rx="15" ry="5" fill="#A0782C"/><rect x="-9" y="0" width="18" height="4" rx="2" fill="#6b4a20"/></g>`;
+  let ex='';
+  if(c.ex==='gls')ex=`<g transform="translate(150,80)"><circle cx="-9" r="8" fill="none" stroke="#444" stroke-width="2.2"/><circle cx="9" r="8" fill="none" stroke="#444" stroke-width="2.2"/><line x1="1" x2="-1" stroke="#444" stroke-width="2"/><line x1="-17" y1="-2" x2="-21" y2="-4" stroke="#444" stroke-width="1.8"/><line x1="17" y1="-2" x2="21" y2="-4" stroke="#444" stroke-width="1.8"/></g>`;
+  if(c.ex==='brd')ex=`<g transform="translate(150,96)"><ellipse cy="6" rx="15" ry="14" fill="${c.hr}" opacity="0.9"/><ellipse cy="3" rx="12" ry="9" fill="${c.hr}" opacity="0.7"/></g>`;
+  if(c.ex==='ron')ex=`<text x="150" y="137" text-anchor="middle" font-family="Fredoka" font-weight="800" font-size="18" fill="white">7</text>`;
+  let hair='';
+  if(!c.hat){if(c.ex==='ron')hair=`<path d="M131,72Q132,58 150,55Q168,58 169,72" fill="${c.hr}"/><path d="M140,56Q150,50 160,56" fill="${c.hr}"/>`;else hair=`<ellipse cx="150" cy="66" rx="20" ry="12" fill="${c.hr}"/>`;}
+  let shX='';if(c.id==='lumber')shX=`<line x1="132" y1="125" x2="168" y2="125" stroke="rgba(0,0,0,0.12)" stroke-width="2"/><line x1="132" y1="135" x2="168" y2="135" stroke="rgba(0,0,0,0.12)" stroke-width="2"/><line x1="132" y1="145" x2="168" y2="145" stroke="rgba(0,0,0,0.12)" stroke-width="2"/><line x1="140" y1="110" x2="140" y2="175" stroke="rgba(0,0,0,0.08)" stroke-width="2"/><line x1="150" y1="110" x2="150" y2="175" stroke="rgba(0,0,0,0.08)" stroke-width="2"/><line x1="160" y1="110" x2="160" y2="175" stroke="rgba(0,0,0,0.08)" stroke-width="2"/>`;
+  let vest='';if(c.id==='cowboy')vest=`<path d="M134,115L134,165L142,170L142,115Z" fill="#6b4a20" opacity="0.7"/><path d="M166,115L166,165L158,170L158,115Z" fill="#6b4a20" opacity="0.7"/>`;
+  let robe='';if(c.id==='harry')robe=`<path d="M128,112L126,178L150,182L174,178L172,112Z" fill="#1a1a2e" opacity="0.5"/>`;
+  let boots=c.id==='cowboy'?`<rect x="138" y="213" width="10" height="3" rx="1" fill="#5a3a10"/><rect x="152" y="213" width="10" height="3" rx="1" fill="#5a3a10"/>`:'';
+  let shC=c.id==='cowboy'?'#6b4a20':'#3a2a1a';
+
+  // Arms: Rock the Baby has special arm positions (animated via JS)
+  let arms;
+  if(isRTB){
+    arms=`
+      <g id="la"><rect x="113" y="113" width="15" height="30" rx="7" fill="${c.sh}" transform="rotate(25,120,113)"/><rect id="la-fore" x="120" y="140" width="13" height="30" rx="6" fill="url(#sg)" transform="rotate(20,126,140)"/><ellipse id="lh" cx="135" cy="170" rx="7" ry="8" fill="${c.sk}"/></g>
+      <g id="ra"><rect x="172" y="113" width="15" height="30" rx="7" fill="${c.sh}" transform="rotate(-25,180,113)"/><rect id="ra-fore" x="168" y="138" width="13" height="30" rx="6" fill="url(#sg)" transform="rotate(-30,174,138)"/><ellipse id="rh" cx="160" cy="130" rx="7" ry="8" fill="${c.sk}"/></g>`;
+  } else if(isBRK){
+    arms=`
+      <g id="la"><rect x="113" y="113" width="15" height="30" rx="7" fill="${c.sh}" transform="rotate(8,120,113)"/><rect x="111" y="140" width="13" height="28" rx="6" fill="url(#sg)" transform="rotate(5,117,140)"/><ellipse cx="116" cy="169" rx="7" ry="8" fill="${c.sk}"/></g>
+      <g id="ra"><rect x="172" y="108" width="15" height="30" rx="7" fill="${c.sh}" transform="rotate(-50,180,108)"/><rect x="198" y="90" width="13" height="26" rx="6" fill="url(#sg)" transform="rotate(-15,204,90)"/><ellipse cx="208" cy="85" rx="7" ry="8" fill="${c.sk}"/></g>`;
+  } else {
+    arms=`
+      <g id="la"><rect x="113" y="113" width="15" height="30" rx="7" fill="${c.sh}" transform="rotate(8,120,113)"/><rect x="111" y="140" width="13" height="28" rx="6" fill="url(#sg)" transform="rotate(5,117,140)"/><ellipse cx="116" cy="169" rx="7" ry="8" fill="${c.sk}"/></g>
+      <g id="ra"><rect x="172" y="113" width="15" height="30" rx="7" fill="${c.sh}" transform="rotate(-8,180,113)"/><rect x="176" y="140" width="13" height="28" rx="6" fill="url(#sg)" transform="rotate(-5,182,140)"/><ellipse cx="183" cy="169" rx="7" ry="8" fill="${c.sk}"/></g>`;
+  }
+
+  const stringStart=isRTB?{x:160,y:134}:isBRK?{x:208,y:89}:{x:183,y:172};
+
+  a.innerHTML=`<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="cs" cx="35%" cy="35%"><stop offset="0%" stop-color="rgba(255,255,255,0.3)"/><stop offset="100%" stop-color="rgba(0,0,0,0.1)"/></radialGradient>
+    <radialGradient id="sg" cx="40%" cy="35%"><stop offset="0%" stop-color="${c.sk}"/><stop offset="100%" stop-color="${adj(c.sk,-30)}"/></radialGradient>
+    <radialGradient id="metalG" cx="30%" cy="25%"><stop offset="0%" stop-color="rgba(200,255,200,0.6)"/><stop offset="50%" stop-color="rgba(100,200,100,0.2)"/><stop offset="100%" stop-color="rgba(0,0,0,0.15)"/></radialGradient>
+    <radialGradient id="glowR" cx="35%" cy="30%"><stop offset="0%" stop-color="rgba(255,200,200,0.5)"/><stop offset="60%" stop-color="rgba(255,100,100,0.1)"/><stop offset="100%" stop-color="rgba(0,0,0,0.1)"/></radialGradient>
+    <radialGradient id="metalY" cx="30%" cy="25%"><stop offset="0%" stop-color="rgba(255,255,200,0.6)"/><stop offset="50%" stop-color="rgba(230,200,100,0.2)"/><stop offset="100%" stop-color="rgba(0,0,0,0.15)"/></radialGradient>
+    <radialGradient id="shinyB" cx="30%" cy="25%"><stop offset="0%" stop-color="rgba(200,230,255,0.6)"/><stop offset="50%" stop-color="rgba(80,160,230,0.2)"/><stop offset="100%" stop-color="rgba(0,0,0,0.1)"/></radialGradient>
+  </defs>
+  <rect x="136" y="172" width="15" height="46" rx="7" fill="${c.pa}"/><rect x="136" y="172" width="15" height="46" rx="7" fill="url(#cs)"/>
+  <rect x="149" y="172" width="15" height="46" rx="7" fill="${c.pa}"/><rect x="149" y="172" width="15" height="46" rx="7" fill="url(#cs)"/>
+  <ellipse cx="143" cy="220" rx="11" ry="6" fill="${shC}"/><ellipse cx="157" cy="220" rx="11" ry="6" fill="${shC}"/>${boots}
+  <rect x="131" y="108" width="38" height="68" rx="16" fill="${c.sh}"/><rect x="131" y="108" width="38" height="68" rx="16" fill="url(#cs)"/>${shX}${vest}${robe}
+  ${arms}
+  <!-- Triangle string for Rock the Baby -->
+  ${isRTB?`<line id="ys2" x1="135" y1="170" x2="160" y2="134" stroke="${getStringColor()}" stroke-width="1.5" stroke-linecap="round"/><line id="ys3" x1="135" y1="170" x2="150" y2="200" stroke="${getStringColor()}" stroke-width="1.5" stroke-linecap="round"/>`:''}
+  <line id="ys" x1="${stringStart.x}" y1="${stringStart.y}" x2="${stringStart.x}" y2="${stringStart.y+38}" stroke="${getStringColor()}" stroke-width="1.8" stroke-linecap="round"/>
+  <g id="ya" transform="translate(${stringStart.x},${stringStart.y+38})">${yoyo}</g>
+  <rect x="144" y="98" width="12" height="14" rx="5" fill="url(#sg)"/>
+  ${hair}<circle cx="150" cy="80" r="23" fill="url(#sg)"/><circle cx="150" cy="80" r="23" fill="url(#cs)"/>
+  <ellipse cx="142" cy="78" rx="3.2" ry="3.5" fill="#2a1a0a"/><ellipse cx="158" cy="78" rx="3.2" ry="3.5" fill="#2a1a0a"/>
+  <circle cx="141" cy="77" r="1.2" fill="white" opacity="0.6"/><circle cx="157" cy="77" r="1.2" fill="white" opacity="0.6"/>
+  <path d="M144,90Q150,96 156,90" fill="none" stroke="#7a4030" stroke-width="2" stroke-linecap="round"/>
+  <ellipse cx="135" cy="86" rx="5" ry="3" fill="#e8907a" opacity="0.3"/><ellipse cx="165" cy="86" rx="5" ry="3" fill="#e8907a" opacity="0.3"/>
+  ${hat}${ex}</svg>`;
+  stopParticles();
+  startAnim();
+  if(PARTICLES[S.lv])startParticles();
+}
+
+let af=null,as=null;
+function startAnim(){if(af)cancelAnimationFrame(af);as=null;af=requestAnimationFrame(tk)}
+function tk(ts){
+  if(!as)as=ts;const tr=T[S.lv],dur=tr.d*1000,el=(ts-as)%dur,t=el/dur;
+  const ye=document.getElementById('ya'),se=document.getElementById('ys');
+  if(!ye||!se){af=requestAnimationFrame(tk);return}
+  const isRTB=tr.n==='Rock the Baby';
+  const isBRK2=tr.n==='Breakaway';
+  const hx=isRTB?160:isBRK2?208:183,hy=isRTB?134:isBRK2?89:172;
+  let yx=hx,yy=hy+38;
+  switch(tr.n){
+    case'Gravity Pull':if(t<.35){yy=hy+10+(t/.35)*80}else if(t<.5){yy=hy+90}else{yy=hy+90-((t-.5)/.5)*80}break;
+    case'Power Throw':if(t<.3){yy=hy+10+(t/.3)*95}else if(t<.5){yy=hy+105;yx=hx+Math.sin(t*60)*2}else{yy=hy+105-((t-.5)/.5)*95}break;
+    case'Sleeper':if(t<.15){yy=hy+10+(t/.15)*90}else if(t<.8){yy=hy+100;yx=hx+Math.sin(t*40)*3}else{yy=hy+100-((t-.8)/.2)*90}break;
+    case'Walk the Dog':if(t<.12){yy=hy+10+(t/.12)*95}else if(t<.65){yy=hy+105;const w=(t-.12)/.53;yx=hx-40+w*80;yy+=Math.sin(w*Math.PI*6)*3}else if(t<.75){yy=hy+105;yx=hx+40}else{const p=(t-.75)/.25;yy=hy+105-p*95;yx=hx+40*(1-p)}break;
+    case'Forward Pass':if(t<.3){yx=hx+(t/.3)*95;yy=hy+15}else if(t<.5){yx=hx+95;yy=hy+15}else{yx=hx+95*(1-(t-.5)/.5);yy=hy+15}break;
+    case'Rock the Baby':{
+      // Right hand (top) rocks, yo-yo swings through triangle
+      const lhx=135,lhy=170; // left hand (bottom)
+      const rhx=160,rhy=134; // right hand (top)
+      // Yo-yo swings as pendulum anchored from right hand
+      const midX=(lhx+rhx)/2, midY=(lhy+rhy)/2+15;
+      if(t<.1){const p=t/.1;yy=rhy+10+p*50;yx=rhx-5}
+      else if(t<.9){
+        const st=(t-.1)/.8;
+        const swing=Math.sin(st*Math.PI*6)*22;
+        yx=midX+swing;
+        yy=midY+10+Math.abs(Math.cos(st*Math.PI*6))*8;
+      }else{const p=(t-.9)/.1;yy=midY+10-(p*40);yx=rhx-5}
+      // Update triangle strings
+      const ys2=document.getElementById('ys2');
+      const ys3=document.getElementById('ys3');
+      if(ys2){ys2.setAttribute('x2',String(rhx));ys2.setAttribute('y2',String(rhy))}
+      if(ys3){ys3.setAttribute('x2',String(yx));ys3.setAttribute('y2',String(yy))}
+      se.setAttribute('x1',String(rhx));se.setAttribute('y1',String(rhy));
+      break;
+    }
+    case'Planet Hop':{const p=[{x:0,y:20},{x:0,y:95},{x:40,y:10},{x:40,y:95},{x:-35,y:10},{x:-35,y:95},{x:0,y:20}];const sg=Math.min(Math.floor(t*(p.length-1)),p.length-2);const st=t*(p.length-1)-sg;yx=hx+p[sg].x+(p[sg+1].x-p[sg].x)*st;yy=hy+p[sg].y+(p[sg+1].y-p[sg].y)*st}break;
+    case'Inside Pull':if(t<.2){yy=hy+10+(t/.2)*80}else if(t<.75){const l=(t-.2)/.55,a=l*Math.PI*2;yx=hx-35+Math.cos(a)*35;yy=hy+55+Math.sin(a)*35}else{yy=hy+90-((t-.75)/.25)*80}break;
+    case'Breakaway':{
+      // Horizontal semicircle from right shoulder to left shoulder
+      const cx2=150,cy2=100; // center of arc (in front of body at shoulder height)
+      const arcR=70; // radius of the semicircle
+      if(t<.15){
+        // Wind up - pull to right
+        const p=t/.15;
+        yx=hx+p*10;yy=hy-p*5;
+      } else if(t<.75){
+        // Semicircle sweep from right to left (horizontal arc)
+        const p=(t-.15)/.6;
+        const angle=-Math.PI*0.1+p*Math.PI*1.2; // sweep from right to left
+        yx=cx2+Math.cos(angle)*arcR;
+        yy=cy2-Math.sin(angle)*15+Math.sin(angle)*5; // slight vertical wobble for depth
+      } else {
+        // Return to hand
+        const p=(t-.75)/.25;
+        const endX=cx2+Math.cos(Math.PI*1.1)*arcR;
+        const endY=cy2;
+        yx=endX+(hx-endX)*p;
+        yy=endY+(hy+30-endY)*p;
+      }
+    }break;
+    case'Around the World':if(t<.1){yy=hy+15+(t/.1)*30}else if(t<.9){const l=(t-.1)/.8,a=l*Math.PI*2-Math.PI/2;yx=hx+Math.cos(a)*80;yy=hy+50+Math.sin(a)*20}else{yy=hy+50-((t-.9)/.1)*35}break;
+    case'Trapeze':if(t<.18){yx=hx+(t/.18)*65;yy=hy+15+(t/.18)*50}else if(t<.35){const p=(t-.18)/.17;yx=hx+65-p*35;yy=hy+65-p*45}else if(t<.65){yx=hx+30;yy=hy+20+Math.sin(((t-.35)/.3)*Math.PI*2)*4}else if(t<.82){const p=(t-.65)/.17;yx=hx+30-p*30;yy=hy+20+p*55}else{yy=hy+75-((t-.82)/.18)*60}break;
+    case'DNA':{const a=t*Math.PI*8;yx=hx+Math.sin(a)*40;yy=hy+25+Math.sin(a*.5)*45+40}break;
+    case'Godspeed':{const sp=t*Math.PI*16,r=35+Math.sin(t*Math.PI*6)*20;yx=hx+Math.cos(sp)*r*.9;yy=hy+50+Math.sin(sp*1.4)*r*.7}break;
+  }
+  ye.setAttribute('transform','translate('+yx+','+yy+')');
+  se.setAttribute('x2',yx);se.setAttribute('y2',yy);
+  af=requestAnimationFrame(tk);
+}
+
+let et=null;
+function sLoop(){if(et)clearInterval(et);if(S.mode!=='auto')return;et=setInterval(()=>{S.money+=ge();pop(ge());ui()},T[S.lv].d*1000)}
+function pop(a){const s=document.getElementById('stage'),p=document.createElement('div');p.className='epop';p.textContent='+'+fm(a);p.style.left=(28+Math.random()*44)+'%';p.style.top='32%';p.style.fontSize=(.85+Math.min(a/50000,.7))+'rem';s.appendChild(p);setTimeout(()=>p.remove(),1000)}
+function buy(t){const c=gc(t);if(S.money<c)return;if(t==='yoyo'&&S.yu)return;if(t==='string'&&S.su)return;S.money-=c;if(t==='yoyo')S.yu=true;else if(t==='string')S.su=true;else{if(S.lv===T.length-1){openR();return}S.lv++;S.yu=false;S.su=false;renderChar();sLoop()}ui()}
+function openR(){document.getElementById('rt').textContent='Rebirth #'+(S.rb+1)+'. Money resets to $0, back to Gravity Pull.';document.getElementById('rm').classList.add('active')}
+function closeR(){document.getElementById('rm').classList.remove('active')}
+function doR(){S.rb++;S.money=0;S.lv=0;S.yu=false;S.su=false;S.em=Math.pow(2,S.rb);S.cm=Math.pow(3,S.rb);closeR();renderChar();sLoop();ui()}
+function setBg(id){const st=document.getElementById('stage');BGS.forEach(b=>st.classList.remove(b.cls));st.classList.add(BGS.find(b=>b.id===id).cls);S.ebg=id}
+let so=false;
+function tShop(){so=!so;document.getElementById('sp').classList.toggle('open',so);document.getElementById('sov').classList.toggle('open',so);if(so)rShop()}
+function shopTab(t){document.getElementById('stb-char').classList.toggle('active',t==='char');document.getElementById('stb-bg').classList.toggle('active',t==='bg');document.getElementById('ss-char').classList.toggle('active',t==='char');document.getElementById('ss-bg').classList.toggle('active',t==='bg');rShop()}
+function rShop(){rChars();rBg()}
+function rChars(){
+  const c=document.getElementById('sc');c.innerHTML='';
+  CH.forEach(ch=>{if(ch.id==='default')return;const ow=S.own.includes(ch.id),eq=S.eq===ch.id,af=S.money>=ch.co;let bt,bc,di;if(eq){bt='Equipped';bc='eq';di=true}else if(ow){bt='Equip';bc='owned';di=false}else{bt=fm(ch.co);bc='';di=!af}
+  const d=document.createElement('div');d.className='scard';
+  d.innerHTML=`<div class="savatar" style="background:linear-gradient(135deg,${ch.sh},${adj(ch.sh,-30)})"><svg width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="16" r="10" fill="${ch.sk}"/><circle cx="21" cy="15" r="1.5" fill="#2a1a0a"/><circle cx="27" cy="15" r="1.5" fill="#2a1a0a"/><path d="M21,21Q24,24 27,21" fill="none" stroke="#6b4030" stroke-width="1.2"/><rect x="16" y="26" width="16" height="16" rx="6" fill="${ch.sh}"/>${ch.hat==='wiz'?'<polygon points="16,10 24,-2 32,10" fill="#333"/>':''}${ch.hat==='bean'?'<ellipse cx="24" cy="8" rx="12" ry="6" fill="#cc3333"/>':''}${ch.hat==='cow'?'<ellipse cx="24" cy="9" rx="16" ry="4" fill="#8B6914"/><rect x="17" y="4" width="14" height="7" rx="5" fill="#A0782C"/>':''}${ch.ex==='gls'?'<circle cx="21" cy="15" r="4" fill="none" stroke="#444" stroke-width="1.2"/><circle cx="27" cy="15" r="4" fill="none" stroke="#444" stroke-width="1.2"/>':''}${ch.ex==='brd'?'<ellipse cx="24" cy="23" rx="7" ry="5" fill="'+ch.hr+'"/>':''}${ch.ex==='ron'?'<text x="24" y="38" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="9" fill="white">7</text>':''}</svg></div><div class="sinfo"><div class="sname">${ch.nm}</div><div class="sdesc">${ch.ds}</div></div><button class="sbtn ${bc}" ${di?'disabled':''} onclick="sActC('${ch.id}')">${bt}</button>`;c.appendChild(d)});
+}
+function rBg(){
+  const c=document.getElementById('sb');c.innerHTML='';
+  BGS.forEach(bg=>{if(bg.id==='default')return;const ow=S.ownbg.includes(bg.id),eq=S.ebg===bg.id,af=S.money>=bg.co;let bt,bc,di;if(eq){bt='Equipped';bc='eq';di=true}else if(ow){bt='Equip';bc='owned';di=false}else{bt=fm(bg.co);bc='';di=!af}
+  const cols={city:'linear-gradient(180deg,#7090b0,#555)',night:'linear-gradient(180deg,#0a0a2e,#1a2a1a)',hogwarts:'linear-gradient(180deg,#2a1a3a,#2a3a1a)',moon:'linear-gradient(180deg,#0a0a1a,#888)'};
+  const d=document.createElement('div');d.className='scard';d.innerHTML=`<div class="bg-preview" style="background:${cols[bg.id]}"></div><div class="sinfo"><div class="sname">${bg.nm}</div><div class="sdesc">${bg.ds}</div></div><button class="sbtn ${bc}" ${di?'disabled':''} onclick="sActB('${bg.id}')">${bt}</button>`;c.appendChild(d)});
+}
+function sActC(id){const ch=CH.find(c=>c.id===id);if(S.own.includes(id)){S.eq=id}else if(S.money>=ch.co){S.money-=ch.co;S.own.push(id);S.eq=id}renderChar();sLoop();rShop();ui()}
+function sActB(id){const bg=BGS.find(b=>b.id===id);if(S.ownbg.includes(id)){setBg(id)}else if(S.money>=bg.co){S.money-=bg.co;S.ownbg.push(id);setBg(id)}rShop();ui()}
+
+function ui(){
+  const tr=T[S.lv],e=ge(),il=S.lv===T.length-1;
+  const ml=S.mode==='manual';
+  document.getElementById('dm').textContent=fm(S.money);
+  document.getElementById('de').textContent=fm(ml?Math.floor(e*1.5):e)+'/trick'+(ml?' (1.5×)':'');
+  document.getElementById('dr').textContent='Rebirths: '+S.rb;
+  document.getElementById('tn').textContent=tr.n;
+  document.getElementById('el').textContent='+'+fm(ml?Math.floor(e*1.5):e);
+  document.getElementById('spd').textContent=ml?'Click to do tricks!':'Trick speed: '+tr.d+'s';
+  const yc=gc('yoyo'),sc=gc('string'),tc=gc('trick');
+  const by=document.getElementById('by'),bs=document.getElementById('bs'),bt=document.getElementById('bt');
+  by.disabled=S.money<yc||S.yu;by.classList.toggle('bought',S.yu);by.querySelector('.uname').textContent=S.yu?'Purchased!':'Upgrade';by.querySelector('.ucost').textContent=S.yu?'✓':fm(yc);
+  bs.disabled=S.money<sc||S.su;bs.classList.toggle('bought',S.su);bs.querySelector('.uname').textContent=S.su?'Purchased!':'Upgrade';bs.querySelector('.ucost').textContent=S.su?'✓':fm(sc);
+  if(il){bt.className='ubtn ur';bt.querySelector('.ulbl').textContent='✨ Rebirth';bt.querySelector('.uname').textContent='Start Over';bt.querySelector('.ucost').textContent=fm(tc);bt.querySelector('.ueff').textContent='2× earn, 3× cost'}
+  else{bt.className='ubtn ut';bt.querySelector('.ulbl').textContent='🟠 Trick';bt.querySelector('.uname').textContent='Next Level';bt.querySelector('.ucost').textContent=fm(tc);bt.querySelector('.ueff').textContent=T[S.lv+1]?T[S.lv+1].n:''}
+  bt.disabled=S.money<tc;
+  const d=document.getElementById('dots');d.innerHTML='';T.forEach((_,i)=>{const e=document.createElement('div');e.className='dot'+(i===S.lv?' a':i<S.lv?' c':'');d.appendChild(e)});
+  let ch=Infinity,cl='';if(!S.yu&&yc<ch){ch=yc;cl='Upg. Yo-Yo'}if(!S.su&&sc<ch){ch=sc;cl='Upg. String'}
+  if(S.yu&&S.su){ch=tc;cl=il?'Rebirth':'Next Trick'}else if(tc<ch){ch=tc;cl=il?'Rebirth':'Next Trick'}
+  document.getElementById('pfill').style.width=Math.min(S.money/ch,1)*100+'%';
+  document.getElementById('plbl').textContent='Next: '+cl+' — '+fm(ch);
+  if(so)rShop();
+}
+renderChar();sLoop();ui();
+</script>
+
+
+</body></html>
